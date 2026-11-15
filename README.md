@@ -10,7 +10,8 @@ CLI на Python: по выгрузке договоров, работ и пла�
 
 ## Быстрый старт
 
-Python 3.10+. Внешних зависимостей для запуска нет.
+Python 3.10+. Внешних зависимостей для запуска нет.  
+Код и документы собраны в Cursor (Composer); ход сессии — `transcripts/cursor-session.md`.
 
 ```bash
 git clone git@github.com:Raasaal511/advance-report-candidate-B.git
@@ -71,7 +72,7 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 ├── data/                     # входная выгрузка
 ├── out/                      # примеры отчётов на разные даты
 ├── tests/                    # unittest: контроль + альтернативные даты
-└── transcripts/              # как получить Claude Code /export + лог Cursor
+└── transcripts/              # лог рабочей сессии (Cursor)
 ```
 
 | Слой | Ответственность |
