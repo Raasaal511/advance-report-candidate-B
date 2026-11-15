@@ -71,6 +71,34 @@ class CalcTests(unittest.TestCase):
             allocated = sum((wl.paid for wl in line.work_lines), Decimal("0.00"))
             self.assertEqual(allocated + line.unallocated_surplus, line.paid_total)
 
+    def test_before_refund_includes_erroneous_payment(self) -> None:
+        """На 05.09.2026 P-2 ещё не возвращён — в выплачено D-1 входит 350000."""
+        contracts, works, payments = load_dataset(DATA)
+        as_of = date(2026, 9, 5)
+        report = {
+            line.contract.contract_id: line
+            for line in build_report(contracts, works, payments, as_of)
+        }
+        self.assertEqual(report["D-1"].paid_total, money("350000"))
+        self.assertEqual(report["D-1"].remaining_total, money("250000"))
+        self.assertEqual(report["D-1"].obligation_total, money("600000"))
+        self.assertEqual(report["D-2"].paid_total, money(0))
+
+    def test_after_late_payment_d2_covered_with_surplus(self) -> None:
+        """На 15.11.2026 P-8 и приёмка W-23: D-2 закрыт, сверх обязательств +5000."""
+        contracts, works, payments = load_dataset(DATA)
+        as_of = date(2026, 11, 15)
+        report = {
+            line.contract.contract_id: line
+            for line in build_report(contracts, works, payments, as_of)
+        }
+        self.assertEqual(report["D-2"].paid_total, money("95000"))
+        self.assertEqual(report["D-2"].remaining_total, money(0))
+        self.assertEqual(report["D-2"].unallocated_surplus, money("5000"))
+        w23 = next(wl for wl in report["D-2"].work_lines if wl.work.work_id == "W-23")
+        self.assertEqual(w23.status, "done")
+        self.assertEqual(w23.remaining, money(0))
+
     def test_direct_payment_sticks_to_work(self) -> None:
         work = Work(
             work_id="W-X",
